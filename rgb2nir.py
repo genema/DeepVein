@@ -2,15 +2,20 @@
 # @Author: gehuama
 # @Date:   2017-12-03 12:00:20
 # @Last Modified by:   gehuama
-# @Last Modified time: 2017-12-05 13:04:03
+# @Last Modified time: 2017-12-23 13:57:45
 # =========================================================================================================
-# This is the script for splitting original RGB image into 65pix*65pix patches
+# RGB to NIR all in one 
+# Usage:
+# command line
+# 	python rgb2nir.py --step x
 # =========================================================================================================
 
 from PARAMETERS import *
 from helper_caffe import caffe_init, rgb2nir
 from helper import cpy_pix, imread_with_pad
 
+
+OUTPUT_DIR = 'clarityLoss_results'
 
 def edge_detector(top, mid, bot):
 	judge1 = bool(top[0]==0 and top[1]==0 and top[2]==0)
@@ -70,20 +75,25 @@ def transform_single(im_path, net, transformer, step=1):
 				patch = patch[4:60, 4:60]
 				cpy_pix(info[0]-HSZ, info[0]+HSZ, info[1]-HSZ, info[1]+HSZ, patch, nir_img)
 	
-	print ' >> {} successfully transformed and saved as ./results/{}.bmp'.format(input_image, input_image[:-4])
-	cv2.imwrite('./results/{}.bmp'.format(input_image[:-4]), 
+	print ' >> {} successfully transformed and saved as ./{}/{}.bmp'.format(input_image, OUTPUT_DIR, input_image[:-4])
+	cv2.imwrite('./{}/{}.bmp'.format(OUTPUT_DIR, input_image[:-4]), 
 				nir_img[HALF_HSZ:HALF_HSZ+orig_size[0], HALF_HSZ:HALF_HSZ+orig_size[1]])
 
+def dir_chk():
+	if not os.path.isdir(PATCH_SAVE_DIR):
+		os.mkdir(PATCH_SAVE_DIR) 
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-step', '--step', type=int, default=1, 
 						help='larger to make transformation faster(1~30)')
 	args = parser.parse_args()
-	if not os.path.isdir(PATCH_SAVE_DIR):
-		os.mkdir(PATCH_SAVE_DIR) 
-	net, transformer = caffe_init('models/rgb2nir/deploy.prototxt',
-									'models/rgb2nir/__model_conv_5__iter_50000.caffemodel')
+	dir_chk()
+	#net, transformer = caffe_init('models/rgb2nir/deploy.prototxt',
+	#								'models/rgb2nir/__model_conv_5__iter_50000.caffemodel')
+	net, transformer = caffe_init('models/rgb2nir/1220_exp/with_clarityLoss_deploy.prototxt',
+								'models/rgb2nir/1220_exp/trained_models/1220_clarityLoss__iter_70000.caffemodel')
+
 	input_list = os.listdir(RGB_IMG_DIR)
 	
 	for input_image in input_list:

@@ -2,7 +2,7 @@
 # @Author: gehuama
 # @Date:   2017-11-30 19:13:12
 # @Last Modified by:   gehuama
-# @Last Modified time: 2017-12-08 14:35:55
+# @Last Modified time: 2017-12-23 13:49:18
 # =========================================================================================================
 # This is a script for splicing forearm patches splitted by a matlab algorithm, which 
 # is written by my tutor and her fellows.
@@ -44,6 +44,7 @@ def imread_with_pad(im_path):
 	new_im[HALF_HSZ:HALF_HSZ+im.shape[0], HALF_HSZ:HALF_HSZ+im.shape[1]] = im[:, :]
 	return new_im, orig_size
 
+'''
 if __name__ == '__main__':
 	result = np.zeros(OUTPUT_SIZE)
 	patch_list = os.listdir(PATCH_DIR)
@@ -54,4 +55,4 @@ if __name__ == '__main__':
 		sub = ind2sub(OUTPUT_SIZE, index)
 		cpy_pix(sub[0]-HSZ, sub[0]+HSZ, sub[1]-HSZ, sub[1]+HSZ, this_patch, result)
 	cv2.imwrite('/home/wb/RGB2NIR/PySpli.png', result)
-
+'''

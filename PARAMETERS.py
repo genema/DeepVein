@@ -2,10 +2,11 @@
 # @Author: gehuama
 # @Date:   2017-12-03 15:31:43
 # @Last Modified by:   gehuama
-# @Last Modified time: 2017-12-05 11:35:16
+# @Last Modified time: 2017-12-23 13:47:48
 
 import sys,os
-sys.path.insert(0, '/home/wb/Env/caffe/python')
+# modifies this too 
+sys.path.insert(0, '/home/wb/Env/caffe-ghma/python')
 import caffe
 import cv2
 from PIL import Image 
@@ -15,13 +16,17 @@ import re
 import matplotlib.pyplot as plt
 import argparse
 
-#INPUT_SIZE    = (768, 1024, 3)
-INPUT_PATH     = './0120_03_01_02_c.bmp'
+# for general usage ,just modify the directory of rg images,all the rgb files in the directory will be transformed
 RGB_IMG_DIR    = './rgb_imgs/'
-#OUTPUT_SIZE   = (768, 1024, 1) 
 
+# also modify the caffe root 
+caffe_root = '/home/wb/Env/caffe-ghma/'
+
+# these are parameters for developpers 
 PATCH_DIR      = '/home/wb/RGB2NIR/transformed_0120_03_01_02/'
 PATCH_SAVE_DIR = './patches/'
+TRANSFORMED_IMG_SAVE_PATH = '/home/wb/RGB2NIR/transformed_images/'
+
 
 CROP_W         = 5
 HSZ            = 32 - CROP_W

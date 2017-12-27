@@ -2,16 +2,13 @@
 # @Author: gehuama
 # @Date:   2017-11-25 16:28:47
 # @Last Modified by:   gehuama
-# @Last Modified time: 2017-12-04 14:43:48
+# @Last Modified time: 2017-12-23 13:49:00
 # This is a prototype script for transforming RGB images to NIR-like images.
 # Also include some visualization functions.
 
 from PARAMETERS import *
 
-TRANSFORMED_IMG_SAVE_PATH = '/home/wb/RGB2NIR/transformed_images/'
 TEST_IMG_PATH = '/home/wb/Downloads/CNN_experiment/'
-RGB_IMG_LIST = os.listdir(TEST_IMG_PATH)
-caffe_root = '/home/wb/Env/caffe/'
 counter = 0
 
 def vis_feat_rgb(data):
