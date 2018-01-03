@@ -2,7 +2,7 @@
 # @Author: gehuama
 # @Date:   2017-11-30 19:13:12
 # @Last Modified by:   gehuama
-# @Last Modified time: 2017-12-23 13:49:18
+# @Last Modified time: 2018-01-03 10:36:31
 # =========================================================================================================
 # This is a script for splicing forearm patches splitted by a matlab algorithm, which 
 # is written by my tutor and her fellows.
@@ -21,10 +21,13 @@ def ind2sub(array_shape, ind):
 def sub2ind(array_shape, rows, cols):
 	return rows*array_shape[1] + cols
 
-def cpy_pix(x0, x1, y0, y1, src, dst):
+def cpy_pix(x0, x1, y0, y1, src, dst, is_color=1):
 	for i in range(x0, x1):
 		for j in range(y0, y1):
-			dst[i][j][0] = src[i-x0][j-y0][0]
+			if is_color:
+				dst[i][j][0] = src[i-x0][j-y0][0]
+			else:
+				dst[i][j] = src[i-x0][j-y0]
 
 def crop(src, wid, hei, crop_w=CROP_W):
 	im = Image.open(src)
@@ -43,16 +46,3 @@ def imread_with_pad(im_path):
 	new_im = np.zeros(new_size)
 	new_im[HALF_HSZ:HALF_HSZ+im.shape[0], HALF_HSZ:HALF_HSZ+im.shape[1]] = im[:, :]
 	return new_im, orig_size
-
-'''
-if __name__ == '__main__':
-	result = np.zeros(OUTPUT_SIZE)
-	patch_list = os.listdir(PATCH_DIR)
-	for patch in tqdm.tqdm(patch_list):
-		#this_patch = cv2.imread(os.path.join(PATCH_DIR, patch))
-		this_patch = crop(os.path.join(PATCH_DIR, patch), PATCH_WID, PATCH_HEI)
-		index = re.findall(r'\d+', patch)[4]
-		sub = ind2sub(OUTPUT_SIZE, index)
-		cpy_pix(sub[0]-HSZ, sub[0]+HSZ, sub[1]-HSZ, sub[1]+HSZ, this_patch, result)
-	cv2.imwrite('/home/wb/RGB2NIR/PySpli.png', result)
-'''

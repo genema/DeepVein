@@ -2,7 +2,7 @@
 # @Author: gehuama
 # @Date:   2017-11-25 16:28:47
 # @Last Modified by:   gehuama
-# @Last Modified time: 2017-12-23 13:49:00
+# @Last Modified time: 2018-01-03 10:13:56
 # This is a prototype script for transforming RGB images to NIR-like images.
 # Also include some visualization functions.
 
@@ -13,6 +13,7 @@ counter = 0
 
 def vis_feat_rgb(data):
   merged_img = np.dstack([data[0], data[1], data[2]])
+  #merged_img = data
   return merged_img
 
 
@@ -28,7 +29,7 @@ def caffe_init(net_cfg, net_weight, use_cpu_flag=0, gpu_id=0):
   transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
   transformer.set_transpose('data', (2,0,1))
   #transformer.set_raw_scale('data', 255)
-  #transformer.set_channel_swap('data', (2,1,0))
+  transformer.set_channel_swap('data', (2,1,0))
   return net, transformer
 
 
@@ -87,7 +88,8 @@ def rgb2nir(net, transformer, im):
   im = transformer.preprocess('data', im)
   net.blobs['data'].data[...] = im
   net.forward()
-  im = vis_feat_rgb(net.blobs['gen_image'].data[0][:3])
+  im = net.blobs['gen_image'].data[0][0]
+  #print net.blobs['gen_image'].data
   return im
 
 '''
