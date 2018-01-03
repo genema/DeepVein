@@ -2,7 +2,7 @@
 # @Author: gehuama
 # @Date:   2017-12-03 12:00:20
 # @Last Modified by:   gehuama
-# @Last Modified time: 2018-01-03 10:37:17
+# @Last Modified time: 2018-01-03 14:34:27
 # =========================================================================================================
 # RGB to NIR all in one 
 # Usage:
@@ -25,7 +25,7 @@ from utils import *
 OUTPUT_DIR = 'results/clarityLoss_results'
 
 def dir_chk():
-	for name in ('OUTPUT_DIR', 'PATCH_SAVE_DIR'):
+	for name in (OUTPUT_DIR, PATCH_SAVE_DIR):
 		if not os.path.isdir(name):
 			os.makedirs(name) 
 		
@@ -102,17 +102,18 @@ def transform_single(im_path, input_image, net, transformer, step=1):
 				nir_img[HALF_HSZ:HALF_HSZ+orig_size[0], HALF_HSZ:HALF_HSZ+orig_size[1]])
 
 
-def forward_gan(im_path, step=4):
-	im, orig_size = imread_with_pad(im_path)
+def forward_gan(im_path, input_image, t_image, net_g, sess, step=4):
+	im, orig_size = imread_with_pad(im_path + input_image)
 	nir_img = np.zeros((im.shape[0], im.shape[1], 1))
 	result = get_split_info(im, im.shape)
 	print ' >> splitting original image and transforming '
-
-	#rgb_img = tl.prepro.threading_data(['temp/sample.png'],fn=get_imgs_fn,path='')
-	#size = rgb_img.shape
+	'''
 	t_image = tf.placeholder('float32', [None, 65, 65, 3], name='input_image')
 	net_g = SRGAN_g(t_image, is_train=False, reuse=False)
-
+	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+	tl.layers.initialize_global_variables(sess)
+	tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir+'/g_srgan.npz', network=net_g)
+	'''
 	for i in tqdm(result.keys()):
 		if result[i] != [9999, 0]:
 			for j in range(result[i][0], result[i][1]+1, step):
@@ -121,14 +122,9 @@ def forward_gan(im_path, step=4):
 
 				rgb_img = tl.prepro.threading_data(['temp/temp.png'],fn=get_imgs_fn,path='')[0]
 				#rgb_img = (rgb_img / 127.5) - 1   # rescale to ［－1, 1]
-				#net_g = SRGAN_g(t_image, is_train=False, reuse=False)
 
-				sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
-				tl.layers.initialize_global_variables(sess)
-				tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir+'/g_srgan.npz', network=net_g)
 				out = sess.run(net_g.outputs, {t_image: [rgb_img]})
-				patch = resize_fn(out[0], [65, 65], 0) * 2
-				# patch = rgb2nir(net, transformer, patch)
+				patch = resize_fn(out[0], [65, 65], 0)
 				
 				patch = patch[4:60, 4:60]
 				cpy_pix(info[0]-HSZ, info[0]+HSZ, info[1]-HSZ, info[1]+HSZ, patch, nir_img, is_color=1)
@@ -139,20 +135,30 @@ def forward_gan(im_path, step=4):
 
 
 def type_caffe(args):
+	input_list = os.listdir(RGB_IMG_DIR)
+	if not len(input_list):
+		raise Exception(" ERR : NO FILE ")
 	net, transformer = caffe_init('models/rgb2nir/1230_exp/use_grey_nir_deploy.prototxt', 'models/rgb2nir/1230_exp/trained_models/1230_use_grey_nir_iter_50000.caffemodel')
 	#net, transformer = caffe_init('models/rgb2nir/deploy.prototxt',
 	#								'models/rgb2nir/__model_conv_5__iter_50000.caffemodel')
 	#net, transformer = caffe_init('models/rgb2nir/1220_exp/with_clarityLoss_deploy.prototxt',
 	#							'models/rgb2nir/1220_exp/trained_models/1220_clarityLoss__iter_70000.caffemodel')
-	input_list = os.listdir(RGB_IMG_DIR)
+
 	for input_image in input_list:
 		transform_single(RGB_IMG_DIR, input_image, net, transformer, args.step)
 
 
 def type_tf(args):
 	input_list = os.listdir(RGB_IMG_DIR)
+	if not len(input_list):
+		raise Exception(" ERR : NO FILE ")
+	t_image = tf.placeholder('float32', [None, 65, 65, 3], name='input_image')
+	net_g = SRGAN_g(t_image, is_train=False, reuse=False)
+	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+	tl.layers.initialize_global_variables(sess)
+	tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir+'/g_srgan.npz', network=net_g)
 	for input_image in input_list:
-		forward_gan(RGB_IMG_DIR + input_image, args.step)
+		forward_gan(RGB_IMG_DIR, input_image, t_image, net_g, sess, args.step)
 
 
 if __name__ == '__main__':
