@@ -2,7 +2,7 @@
 # @Author: gehuama
 # @Date:   2017-12-03 12:00:20
 # @Last Modified by:   gehuama
-# @Last Modified time: 2018-01-03 14:34:27
+# @Last Modified time: 2018-01-03 15:28:54
 # =========================================================================================================
 # RGB to NIR all in one 
 # Usage:
@@ -13,7 +13,6 @@
 from PARAMETERS import *
 from helper_caffe import caffe_init, rgb2nir
 from helper import cpy_pix, imread_with_pad
-#from gan4rgb2nir import evaluate as rgb2nir_gan
 
 import tensorflow as tf
 import tensorlayer as tl
@@ -107,13 +106,7 @@ def forward_gan(im_path, input_image, t_image, net_g, sess, step=4):
 	nir_img = np.zeros((im.shape[0], im.shape[1], 1))
 	result = get_split_info(im, im.shape)
 	print ' >> splitting original image and transforming '
-	'''
-	t_image = tf.placeholder('float32', [None, 65, 65, 3], name='input_image')
-	net_g = SRGAN_g(t_image, is_train=False, reuse=False)
-	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
-	tl.layers.initialize_global_variables(sess)
-	tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir+'/g_srgan.npz', network=net_g)
-	'''
+
 	for i in tqdm(result.keys()):
 		if result[i] != [9999, 0]:
 			for j in range(result[i][0], result[i][1]+1, step):
@@ -121,12 +114,11 @@ def forward_gan(im_path, input_image, t_image, net_g, sess, step=4):
 				cv2.imwrite('temp/temp.png', patch)
 
 				rgb_img = tl.prepro.threading_data(['temp/temp.png'],fn=get_imgs_fn,path='')[0]
-				#rgb_img = (rgb_img / 127.5) - 1   # rescale to ［－1, 1]
-
+				rgb_img = (rgb_img / 127.5) - 1   # rescale to ［－1, 1]
 				out = sess.run(net_g.outputs, {t_image: [rgb_img]})
 				patch = resize_fn(out[0], [65, 65], 0)
-				
-				patch = patch[4:60, 4:60]
+				patch = patch[8:56, 8:56]
+				HSZ = 24
 				cpy_pix(info[0]-HSZ, info[0]+HSZ, info[1]-HSZ, info[1]+HSZ, patch, nir_img, is_color=1)
 
 	print ' >> {} successfully transformed and saved as ./{}/{}.bmp'.format(input_image, OUTPUT_DIR, input_image[:-4])
@@ -153,8 +145,8 @@ def type_tf(args):
 	if not len(input_list):
 		raise Exception(" ERR : NO FILE ")
 	t_image = tf.placeholder('float32', [None, 65, 65, 3], name='input_image')
-	net_g = SRGAN_g(t_image, is_train=False, reuse=False)
-	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+	net_g   = SRGAN_g(t_image, is_train=False, reuse=False)
+	sess    = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
 	tl.layers.initialize_global_variables(sess)
 	tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir+'/g_srgan.npz', network=net_g)
 	for input_image in input_list:
@@ -173,6 +165,3 @@ if __name__ == '__main__':
 		type_caffe(args)
 	elif args.type == 'gan':
 		type_tf(args)
-
-
-
