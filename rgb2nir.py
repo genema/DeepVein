@@ -2,7 +2,7 @@
 # @Author: gehuama
 # @Date:   2017-12-03 12:00:20
 # @Last Modified by:   gehuama
-# @Last Modified time: 2018-01-06 13:33:20
+# @Last Modified time: 2018-01-07 18:56:16
 # =========================================================================================================
 # RGB to NIR all in one 
 # Usage:
@@ -21,7 +21,7 @@ from utils import *
 
 
 
-OUTPUT_DIR = 'results/0104_batch8_grey_nir_results'
+OUTPUT_DIR = 'results/0107_batch4_gan_results'
 
 def dir_chk():
 	for name in (OUTPUT_DIR, PATCH_SAVE_DIR):
@@ -116,9 +116,10 @@ def forward_gan(im_path, input_image, t_image, net_g, sess, step=4):
 				rgb_img = tl.prepro.threading_data(['temp/temp.png'],fn=get_imgs_fn,path='')[0]
 				rgb_img = (rgb_img / 127.5) - 1   # rescale to ［－1, 1]
 				out = sess.run(net_g.outputs, {t_image: [rgb_img]})
-				patch = resize_fn(out[0], [65, 65], 0)
-				patch = patch[8:56, 8:56]
-				HSZ = 24
+				#cv2.imwrite('patches/%d.png' % info[2], (out[0]+1)*127.5)
+				patch = (out[0]+1)*127.5
+
+				patch = patch[4:60, 4:60]
 				cpy_pix(info[0]-HSZ, info[0]+HSZ, info[1]-HSZ, info[1]+HSZ, patch, nir_img, is_color=1)
 
 	print ' >> {} successfully transformed and saved as ./{}/{}.bmp'.format(input_image, OUTPUT_DIR, input_image[:-4])
@@ -130,7 +131,7 @@ def type_caffe(args):
 	input_list = os.listdir(RGB_IMG_DIR)
 	if not len(input_list):
 		raise Exception(" ERR : NO FILE ")
-	net, transformer = caffe_init('models/rgb2nir/0104_exp/use_grey_nir_deploy.prototxt', 'models/rgb2nir/0104_exp/trained_models/0104_use_grey_nir__iter_50000.caffemodel')
+	net, transformer = caffe_init('models/rgb2nir/0104_exp/use_grey_nir_deploy.prototxt', 'models/rgb2nir/0104_exp/trained_models/0104_batch_1_use_grey_nir__iter_750000.caffemodel')
 	#net, transformer = caffe_init('models/rgb2nir/1230_exp/use_grey_nir_deploy.prototxt', 'models/rgb2nir/1230_exp/trained_models/1230_use_grey_nir_iter_50000.caffemodel')
 	#net, transformer = caffe_init('models/rgb2nir/deploy.prototxt',
 	#								'models/rgb2nir/__model_conv_5__iter_50000.caffemodel')
