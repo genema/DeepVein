@@ -2,7 +2,7 @@
 # @Author: gehuama
 # @Date:   2017-12-03 12:00:20
 # @Last Modified by:   gehuama
-# @Last Modified time: 2018-01-03 15:28:54
+# @Last Modified time: 2018-01-06 13:33:20
 # =========================================================================================================
 # RGB to NIR all in one 
 # Usage:
@@ -21,7 +21,7 @@ from utils import *
 
 
 
-OUTPUT_DIR = 'results/clarityLoss_results'
+OUTPUT_DIR = 'results/0104_batch8_grey_nir_results'
 
 def dir_chk():
 	for name in (OUTPUT_DIR, PATCH_SAVE_DIR):
@@ -130,7 +130,8 @@ def type_caffe(args):
 	input_list = os.listdir(RGB_IMG_DIR)
 	if not len(input_list):
 		raise Exception(" ERR : NO FILE ")
-	net, transformer = caffe_init('models/rgb2nir/1230_exp/use_grey_nir_deploy.prototxt', 'models/rgb2nir/1230_exp/trained_models/1230_use_grey_nir_iter_50000.caffemodel')
+	net, transformer = caffe_init('models/rgb2nir/0104_exp/use_grey_nir_deploy.prototxt', 'models/rgb2nir/0104_exp/trained_models/0104_use_grey_nir__iter_50000.caffemodel')
+	#net, transformer = caffe_init('models/rgb2nir/1230_exp/use_grey_nir_deploy.prototxt', 'models/rgb2nir/1230_exp/trained_models/1230_use_grey_nir_iter_50000.caffemodel')
 	#net, transformer = caffe_init('models/rgb2nir/deploy.prototxt',
 	#								'models/rgb2nir/__model_conv_5__iter_50000.caffemodel')
 	#net, transformer = caffe_init('models/rgb2nir/1220_exp/with_clarityLoss_deploy.prototxt',
