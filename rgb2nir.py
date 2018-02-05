@@ -148,7 +148,11 @@ def type_tf(args):
 		raise Exception(" ERR : NO FILE ")
 	t_image = tf.placeholder('float32', [None, 65, 65, 3], name='input_image')
 	net_g   = SRGAN_g(t_image, is_train=False, reuse=False)
-	sess    = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+	tf_config = tf.ConfigProto()
+	tf_config.allow_soft_placement = True
+	tf_config.log_device_placement = False
+	tf_config.gpu_options.gpu_growth = True
+	sess    = tf.Session(config=tf_config)
 	tl.layers.initialize_global_variables(sess)
 	tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir+'/g_srgan.npz', network=net_g)
 	for input_image in input_list:
